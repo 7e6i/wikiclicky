@@ -6,7 +6,6 @@ const currentTime = ref(new Date())
 let timerId = null
 
 const secondsUntilNextMinute = computed(() => {
-  return 60 - currentTime.value.getSeconds()
   const seconds = 60 - currentTime.value.getSeconds()
   return String(seconds % 60).padStart(2, '0')
 })
