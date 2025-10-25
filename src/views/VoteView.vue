@@ -8,7 +8,6 @@ const columns = ['person_id','wiki_url',  'name', 'plus', 'minus', 'total', 'alp
 const colTitles = ['Rank', 'Name', 'Plus', 'Minus', 'Total', 'Alpha', 'Beta']
 
 const selectedPerson = ref(null)
-
 const buttonDisabled = ref(true)
 const alteredPeople = ref([])
 
