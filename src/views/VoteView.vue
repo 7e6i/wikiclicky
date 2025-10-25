@@ -54,7 +54,7 @@ async function getPeople() {
     if (data) {people.value = data}
   } 
   catch (e) {error.value = e} 
-  finally {loading.value = false}
+  
 }
 
 onMounted(() => {
