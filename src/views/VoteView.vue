@@ -1,8 +1,9 @@
 <script setup>
 import { supabase } from '@/config/supabaseConfig.js'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 const people = ref([])
+const loading = ref(true)
 const error = ref(null)
 const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'gamma']
 const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta', 'Gamma']
@@ -13,6 +14,7 @@ const alteredPeople = ref([])
 
 let initialTimeout = null
 let minuteTimer = null
+const searchQuery = ref('')
 
 async function saveVotes() {
   if (alteredPeople.value.length === 0) {
@@ -43,6 +45,7 @@ async function runMinuteTasks() {
 // add search function or something
 async function getPeople() {
   try {
+    loading.value = true
     const { data, error: fetchError } = await supabase
       .from('person')
       .select(columns.join(','))
@@ -53,7 +56,7 @@ async function getPeople() {
     if (data) {people.value = data}
   } 
   catch (e) {error.value = e} 
-  
+  finally {loading.value = false}
 }
 
 onMounted(() => {
@@ -106,6 +109,15 @@ function handlePM(amount) {
   }
 }
 
+const filteredPeople = computed(() => {
+  if (!searchQuery.value) {
+    return people.value
+  }
+  return people.value.filter(person =>
+    person.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
 </script>
 
 <template>
@@ -141,10 +153,18 @@ function handlePM(amount) {
 
 
       <!-- should be people.value.length but that breaks it, idk why -->
-      <h1>People</h1>
-      <div v-if="people.length===0">Loading...</div>
+      <div class="table-header">
+        <h1>People</h1>
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Search..."
+          class="search-bar"
+        />
+      </div>
+      <div v-if="loading">Loading...</div>
       <div v-else-if="error" class="error">Error fetching data: {{ error.message }}</div>
-      <table v-else-if="people.length > 0">
+      <table v-else-if="filteredPeople.length > 0">
         <thead>
           <tr>
             <th v-for="title in colTitles" :key="title">{{ title }}</th>
@@ -152,7 +172,7 @@ function handlePM(amount) {
         </thead>
         <tbody>
           <tr
-            v-for="(person, index) in people"
+            v-for="(person, index) in filteredPeople"
             :key="person.person_id"
             @click="selectPerson(person)"
             :class="{ 'selected-row': selectedPerson && selectedPerson.person_id === person.person_id }"
@@ -163,13 +183,13 @@ function handlePM(amount) {
             <td class="cell-minus">{{ person.downvote }}</td>
             <td class="cell-total">{{ person.sigma }}</td>
             <td class="cell-alpha">{{ person.delta }}</td>
-            <td class="cell-beta">{{ person.pi }}</td>
-            <td class="cell-eta">{{ person.eta }}</td>
-            <td class="cell-gamma">{{ person.gamma }}</td>
+            <td class="cell-beta">{{ person.pi.toFixed(4) }}</td>
+            <td class="cell-eta">{{ person.eta.toFixed(2) }}</td>
+            <td class="cell-gamma">{{ person.gamma.toFixed(4) }}</td>
           </tr>
         </tbody>
       </table>
-      <div v-else>No people found.</div>
+      <div v-else>No people found matching your search.</div>
 
       
     </div>
@@ -238,6 +258,28 @@ function handlePM(amount) {
   text-align: center;
 }
 
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 250px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-bar:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 1px #3182ce;
+}
+
 .altered-table-container {
   margin-top: 2.5rem;
 }
@@ -272,6 +314,23 @@ td {
 thead th {
   background-color: #f8fafc;
   font-weight: 600;
+}
+
+/* Right-align numeric columns */
+.cell-rank,
+.cell-plus,
+.cell-minus,
+.cell-total,
+.cell-alpha,
+.cell-beta,
+.cell-eta,
+.cell-gamma {
+  text-align: right;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+thead th:not(:nth-child(2)) {
+  text-align: right;
 }
 
 tbody tr {

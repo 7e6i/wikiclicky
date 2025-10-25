@@ -7,7 +7,7 @@
     <div class="about-content">
       <section class="about-section">
         <h1>The Modern Popularity Contest</h1>
-        <p>Auto-clickers encouraged! No accounts, no cookies, no ads - just a simple web app.</p>
+        <p>Auto-clickers encouraged! No accounts, no cookies, no tracking - just a simple web app.</p>
       </section>
 
       <section class="about-section">

@@ -66,7 +66,7 @@ onMounted(() => {
       <div class="ranking-grid">
         <div class="ranking-category">
           <h2>Top 5 by Sigma (Σ)</h2>
-          <p class="category-description">Total Votes</p>
+          <p class="category-description">Upvotes + Downvotes</p>
           <ol class="ranking-list">
             <li v-for="person in topSigma" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
@@ -76,7 +76,7 @@ onMounted(() => {
         </div>
         <div class="ranking-category">
           <h2>Top 5 by Delta (Δ)</h2>
-          <p class="category-description">Net Score (Up - Down)</p>
+          <p class="category-description">Upvotes - Downvotes</p>
           <ol class="ranking-list">
             <li v-for="person in topDelta" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
@@ -86,7 +86,7 @@ onMounted(() => {
         </div>
         <div class="ranking-category">
           <h2>Top 5 by Gamma (γ)</h2>
-          <p class="category-description">Score Ratio (Delta / Sigma)</p>
+          <p class="category-description">Delta / Sigma</p>
           <ol class="ranking-list">
             <li v-for="person in topGamma" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
@@ -97,7 +97,7 @@ onMounted(() => {
       </div>
       <div class="ranking-grid">
         <div class="ranking-category">
-          <h2>Top 5 by Upvotes (⬆️)</h2>
+          <h2>Top 5 by Upvotes</h2>
           <p class="category-description">Total Upvotes</p>
           <ol class="ranking-list">
             <li v-for="person in topUpvote" :key="person.person_id">
@@ -118,7 +118,7 @@ onMounted(() => {
         </div>
         <div class="ranking-category">
           <h2>Top 5 by Eta (η)</h2>
-          <p class="category-description">Upvote/Downvote Ratio</p>
+          <p class="category-description">Upvotes / Downvotes</p>
           <ol class="ranking-list">
             <li v-for="person in topEta" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
