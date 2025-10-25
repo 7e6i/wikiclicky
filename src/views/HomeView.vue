@@ -90,7 +90,7 @@ onMounted(() => {
           <ol class="ranking-list">
             <li v-for="person in topGamma" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
-              <span class="person-score">{{ person.gamma.toFixed(3) }}</span>
+              <span class="person-score">{{ person.gamma.toFixed(4) }}</span>
             </li>
           </ol>
         </div>
@@ -112,7 +112,7 @@ onMounted(() => {
           <ol class="ranking-list">
             <li v-for="person in topPi" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
-              <span class="person-score">{{ person.pi.toFixed(3) }}</span>
+              <span class="person-score">{{ person.pi.toFixed(4) }}</span>
             </li>
           </ol>
         </div>
@@ -122,7 +122,7 @@ onMounted(() => {
           <ol class="ranking-list">
             <li v-for="person in topEta" :key="person.person_id">
               <span class="person-name">{{ person.name }}</span>
-              <span class="person-score">{{ person.eta.toFixed(3) }}</span>
+              <span class="person-score">{{ person.eta.toFixed(4) }}</span>
             </li>
           </ol>
         </div>
