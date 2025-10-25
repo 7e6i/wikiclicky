@@ -138,7 +138,7 @@ function handlePM(amount) {
 
 
       <h1>People</h1>
-      <div v-if="people.length===0">Loading...</div>
+      <div v-if="people.value.length===0">Loading...</div>
       <div v-else-if="error" class="error">Error fetching data: {{ error.message }}</div>
       <table v-else-if="people.length > 0">
         <thead>
