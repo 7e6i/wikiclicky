@@ -1,12 +1,12 @@
 <script setup>
 import { supabase } from '@/config/supabaseConfig.js'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 const people = ref([])
 const loading = ref(true)
 const error = ref(null)
-const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'gamma']
-const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta', 'Gamma']
+const columns = ['person_id','wiki_url',  'name', 'category', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'gamma']
+const colTitles = ['Name','Category',  'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta', 'Gamma']
 
 const selectedPerson = ref(null)
 const buttonDisabled = ref(true)
@@ -15,6 +15,18 @@ const alteredPeople = ref([])
 let initialTimeout = null
 let minuteTimer = null
 const searchQuery = ref('')
+const selectedCategory = ref('All')
+const sortBy = ref('gamma')
+const sortOptions = ref([
+  { text: 'Gamma', value: 'gamma' },
+  { text: 'Name', value: 'name' },
+  { text: 'Upvotes', value: 'upvote' },
+  { text: 'Downvotes', value: 'downvote' },
+  { text: 'Sigma', value: 'sigma' },
+  { text: 'Delta', value: 'delta' },
+  { text: 'Pi', value: 'pi' },
+  { text: 'Eta', value: 'eta' },
+])
 
 async function saveVotes() {
   if (alteredPeople.value.length === 0) {
@@ -49,8 +61,7 @@ async function getPeople() {
     const { data, error: fetchError } = await supabase
       .from('person')
       .select(columns.join(','))
-      .order('delta', { ascending: false })
-      .order('sigma', { ascending: false })
+      .order(sortBy.value, { ascending: sortBy.value === 'name' })
 
     if (fetchError) {throw fetchError}
     if (data) {people.value = data}
@@ -110,12 +121,26 @@ function handlePM(amount) {
 }
 
 const filteredPeople = computed(() => {
-  if (!searchQuery.value) {
-    return people.value
+  let result = people.value;
+
+  if (selectedCategory.value && selectedCategory.value !== 'All') {
+    result = result.filter(person => person.category === selectedCategory.value);
   }
-  return people.value.filter(person =>
-    person.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+
+  if (searchQuery.value) {
+    result = result.filter(person => person.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+  }
+
+  return result;
+})
+
+const categories = computed(() => {
+  const allCategories = people.value.map(p => p.category).filter(Boolean);
+  return ['All', ...new Set(allCategories)];
+})
+
+watch(sortBy, () => {
+  getPeople()
 })
 
 </script>
@@ -132,8 +157,8 @@ const filteredPeople = computed(() => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Up votes</th>
-              <th>Down nvotes</th>
+              <th>Upvotes</th>
+              <th>Downvotes</th>
             </tr>
           </thead>
           <tbody>
@@ -155,12 +180,30 @@ const filteredPeople = computed(() => {
       <!-- should be people.value.length but that breaks it, idk why -->
       <div class="table-header">
         <h1>People</h1>
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search..."
-          class="search-bar"
-        />
+        <div class="controls">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by name..."
+            class="search-bar"
+          />
+          <div class="sort-container">
+            <label for="filter-by-category" class="sort-label">Category:</label>
+            <select id="filter-by-category" v-model="selectedCategory" class="sort-dropdown">
+              <option v-for="category in categories" :key="category" :value="category">
+                {{ category }}
+              </option>
+            </select>
+          </div>
+          <div class="sort-container">
+            <label for="sort-by" class="sort-label">Sort by:</label>
+            <select id="sort-by" v-model="sortBy" class="sort-dropdown">
+              <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                {{ option.text }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
       <div v-if="loading">Loading...</div>
       <div v-else-if="error" class="error">Error fetching data: {{ error.message }}</div>
@@ -172,13 +215,13 @@ const filteredPeople = computed(() => {
         </thead>
         <tbody>
           <tr
-            v-for="(person, index) in filteredPeople"
+            v-for="person in filteredPeople"
             :key="person.person_id"
             @click="selectPerson(person)"
             :class="{ 'selected-row': selectedPerson && selectedPerson.person_id === person.person_id }"
           >
-            <td class="cell-rank">{{ index + 1 }}</td>
             <td class="cell-name">{{ person.name }}</td>
+            <td class="cell-category">{{ person.category }}</td>
             <td class="cell-plus">{{ person.upvote }}</td>
             <td class="cell-minus">{{ person.downvote }}</td>
             <td class="cell-total">{{ person.sigma }}</td>
@@ -258,6 +301,32 @@ const filteredPeople = computed(() => {
   text-align: center;
 }
 
+.controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-label {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.sort-dropdown {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  width: 180px;
+}
+
 .table-header {
   display: flex;
   justify-content: space-between;
@@ -307,17 +376,17 @@ table {
 th,
 td {
   padding: 0.75rem;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #e2e8f0;
 }
 
 thead th {
   background-color: #f8fafc;
   font-weight: 600;
+  text-align: center;
 }
 
 /* Right-align numeric columns */
-.cell-rank,
 .cell-plus,
 .cell-minus,
 .cell-total,
@@ -325,12 +394,8 @@ thead th {
 .cell-beta,
 .cell-eta,
 .cell-gamma {
-  text-align: right;
+  text-align: center;
   font-family: 'Courier New', Courier, monospace;
-}
-
-thead th:not(:nth-child(2)) {
-  text-align: right;
 }
 
 tbody tr {
