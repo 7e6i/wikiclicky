@@ -1,6 +1,6 @@
 <script setup>
 import { supabase } from '@/config/supabaseConfig.js'
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 
 const people = ref([])
 const loading = ref(true)
@@ -74,6 +74,13 @@ onMounted(() => {
   getPeople()
   setTimeout(() => buttonDisabled.value = false, 1000)
 
+  // Load AdSense script
+  const script = document.createElement('script')
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9848025068145581"
+  script.async = true
+  script.crossOrigin = "anonymous"
+  document.head.appendChild(script)
+
   const now = new Date()
   const delayUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds()
 
@@ -104,6 +111,15 @@ function selectPerson(person){
   }
 }
 
+function pushAd() {
+  nextTick(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error("AdSense error:", e);
+    }
+  });
+}
 
 function handlePM(amount) {
   if (buttonDisabled.value) return
@@ -141,6 +157,7 @@ const categories = computed(() => {
 
 watch(sortBy, () => {
   getPeople()
+  pushAd()
 })
 
 </script>
@@ -267,6 +284,16 @@ watch(sortBy, () => {
       <div v-else class="details-placeholder">
         <p>Select a person from the table to see details and actions.</p>
       </div>
+
+      <div class="ad-container">
+        <!-- Ad Unit -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-9848025068145581"
+             data-ad-slot="YOUR_AD_SLOT_ID"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+      </div>
     </div>
 
 
@@ -290,6 +317,12 @@ watch(sortBy, () => {
   border-left: 1px solid #e2e8f0;
   padding: 1.5rem;
   background-color: #f8fafc;
+}
+.ad-container {
+  margin-top: auto; /* Pushes the ad to the bottom */
+  padding-top: 2rem;
+  display: flex;
+  justify-content: center;
 }
 
 .details-placeholder {
