@@ -4,8 +4,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const people = ref([])
 const error = ref(null)
-const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'upvote_auto', 'downvote_auto']
-const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta']
+const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'gamma']
+const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta', 'Gamma']
 
 const selectedPerson = ref(null)
 const buttonDisabled = ref(true)
@@ -165,6 +165,7 @@ function handlePM(amount) {
             <td class="cell-alpha">{{ person.delta }}</td>
             <td class="cell-beta">{{ person.pi }}</td>
             <td class="cell-eta">{{ person.eta }}</td>
+            <td class="cell-gamma">{{ person.gamma }}</td>
           </tr>
         </tbody>
       </table>

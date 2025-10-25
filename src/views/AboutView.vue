@@ -7,7 +7,7 @@
     <div class="about-content">
       <section class="about-section">
         <h1>The Modern Popularity Contest</h1>
-        <p>Auto-clickers encouraged!</p>
+        <p>Auto-clickers encouraged! No accounts, no cookies, no ads - just a simple web app.</p>
       </section>
 
       <section class="about-section">
@@ -44,6 +44,10 @@
           <div class="ranking-item">
             <h3>Eta (η)</h3>
             <p><em>Ratio of votes.</em> This is the ratio of upvotes to downvotes.</p>
+          </div>
+          <div class="ranking-item">
+            <h3>Gamma (γ)</h3>
+            <p><em>Basically pi.</em> This is the ratio of delta to sigma.</p>
           </div>
         </div>
       </section>

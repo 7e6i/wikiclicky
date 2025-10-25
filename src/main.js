@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 
 import App from '@/App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-
+import { analytics } from './config/firebaseConfig.js'
 
 import HomeView from '@/views/HomeView.vue'
 import AboutView from '@/views/AboutView.vue'
