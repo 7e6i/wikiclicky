@@ -21,11 +21,9 @@ async function saveVotes() {
     return
   }
 
-  const votesToSave = alteredPeople.value.map(({ person_id, plus, minus }) => ({
-    person_id,
-    plus,
-    minus,
-  }))
+  const votesToSave = alteredPeople.value.map(
+    ({ person_id, plus, minus }) => ({person_id,plus,minus,})
+  )
 
   const { error: insertError } = await supabase.from('vote').insert(votesToSave)
 
@@ -43,6 +41,7 @@ async function runMinuteTasks() {
   await getPeople()
 }
 
+// add search function or something
 async function getPeople() {
   try {
     const { data, error: fetchError } = await supabase
@@ -78,9 +77,10 @@ onUnmounted(() => {
 })
 
 function selectPerson(person){
-  selectedPerson.value = person
-  selectedPerson.value.plus = 0
-  selectedPerson.value.minus = 0
+  selectedPerson.value = {
+    person_id:person.person_id, plus:0, minus:0,
+    name:person.name, wiki_url:person.wiki_url
+  }
 
   if (!alteredPeople.value.find((p) => p.person_id === person.person_id)){
     alteredPeople.value.push(selectedPerson.value)
