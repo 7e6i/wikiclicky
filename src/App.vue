@@ -1,86 +1,105 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 
+const currentTime = ref(new Date())
+let timerId = null
+
+const secondsUntilNextMinute = computed(() => {
+  return 60 - currentTime.value.getSeconds()
+})
+
+onMounted(() => {
+  timerId = setInterval(() => {
+    currentTime.value = new Date()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  clearInterval(timerId)
+})
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
       <nav>
         <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/vote">Vote</RouterLink>
         <RouterLink to="/about">About</RouterLink>
       </nav>
+      <div>Voting for People... reimagined</div>
+      <div class="time-container">
+        <div class="countdown">Next update: {{ secondsUntilNextMinute }}s</div>
+        <div class="time-display">{{ currentTime.toLocaleTimeString() }}</div>
+      </div>
     </div>
   </header>
 
   <RouterView />
 </template>
 
+
 <style scoped>
 header {
-  line-height: 1.5;
-  max-height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
 }
 
 nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
+nav a,
+nav button {
   display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.3s;
 }
 
-nav a:first-of-type {
-  border: 0;
+nav a:hover,
+nav button:hover {
+  background-color: #f0f0f0;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.time-display {
+  font-size: 1rem;
+  color: #333;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.time-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.countdown {
+  font-size: 0.9rem;
+  color: #666;
+  background-color: #f0f0f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.clicks-remaining {
+  font-size: 1rem;
+  color: #333;
 }
 </style>

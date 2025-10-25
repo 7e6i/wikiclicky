@@ -1,17 +1,50 @@
 <script setup>
 import { supabase } from '@/config/supabaseConfig.js'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const people = ref([])
-const loading = ref(true)
 const error = ref(null)
 const columns = ['person_id','wiki_url',  'name', 'plus', 'minus', 'total', 'alpha', 'beta']
 const colTitles = ['Rank', 'Name', 'Plus', 'Minus', 'Total', 'Alpha', 'Beta']
 
+const selectedPerson = ref(null)
+
+const buttonDisabled = ref(true)
+const alteredPeople = ref([])
+
+let initialTimeout = null
+let minuteTimer = null
+
+async function saveVotes() {
+  if (alteredPeople.value.length === 0) {
+    console.log('No changes to save.')
+    return
+  }
+
+  const votesToSave = alteredPeople.value.map(({ person_id, plus, minus }) => ({
+    person_id,
+    plus,
+    minus,
+  }))
+
+  const { error: insertError } = await supabase.from('vote').insert(votesToSave)
+
+  if (insertError) {
+    console.error('Error saving votes:', insertError)
+  } else {
+    selectedPerson.value.plus = 0
+    selectedPerson.value.minus = 0
+    alteredPeople.value = [selectedPerson.value]
+  }
+}
+
+async function runMinuteTasks() {
+  await saveVotes()
+  await getPeople()
+}
 
 async function getPeople() {
   try {
-    loading.value = true
     const { data, error: fetchError } = await supabase
       .from('person')
       .select(columns.join(','))
@@ -28,7 +61,47 @@ async function getPeople() {
 
 onMounted(() => {
   getPeople()
+  setTimeout(() => buttonDisabled.value = false, 1000)
+
+  const now = new Date()
+  const delayUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds()
+
+  initialTimeout = setTimeout(() => {
+    runMinuteTasks() // Run once at the top of the minute
+    minuteTimer = setInterval(runMinuteTasks, 60000) // Then run every minute after
+  }, delayUntilNextMinute)
 })
+
+onUnmounted(() => {
+  clearInterval(minuteTimer)
+  clearTimeout(initialTimeout)
+})
+
+function selectPerson(person){
+  selectedPerson.value = person
+  selectedPerson.value.plus = 0
+  selectedPerson.value.minus = 0
+
+  if (!alteredPeople.value.find((p) => p.person_id === person.person_id)){
+    alteredPeople.value.push(selectedPerson.value)
+  }
+}
+
+
+function handlePM(amount) {
+  if (buttonDisabled.value) return
+  if (!selectedPerson.value) return
+
+  buttonDisabled.value = true
+  setTimeout(() => buttonDisabled.value = false, 1000)
+
+  if (amount ===1){
+    selectedPerson.value.plus++
+  }
+  else if (amount === -1){
+    selectedPerson.value.minus++
+  }
+}
 
 </script>
 
@@ -38,8 +111,35 @@ onMounted(() => {
 
     <div class="table-container">
 
+      <div v-if="alteredPeople.length > 0" class="altered-table-container">
+        <h1 class="altered-title">Pending</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Plus</th>
+              <th>Minus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="person in alteredPeople" :key="person.person_id">
+              <td>{{ person.name }}</td>
+              <td>{{ person.plus }}</td>
+              <td>{{ person.minus }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else class="altered-table-container">
+        <h1 class="altered-title">Pending</h1>
+        <p>No changes pending.</p>
+      </div>
+
+
+
+
       <h1>People</h1>
-      <div v-if="loading">Loading...</div>
+      <div v-if="people.length===0">Loading...</div>
       <div v-else-if="error" class="error">Error fetching data: {{ error.message }}</div>
       <table v-else-if="people.length > 0">
         <thead>
@@ -67,6 +167,38 @@ onMounted(() => {
       <div v-else>No people found.</div>
 
       
+    </div>
+
+    
+    <div class="details-container">
+      <div v-if="selectedPerson" class="details-content">
+        <h2>
+          <a :href="'https://en.wikipedia.org/wiki/'+selectedPerson.wiki_url" target="_blank" rel="noopener noreferrer">
+            {{ selectedPerson.name }}
+          </a>
+        </h2>
+        
+        <div class="actions">
+          <div class="action-row">
+            <button @click="handlePM(1)" class="action-btn plus-btn" :disabled="buttonDisabled">+</button>
+            <div class="counter-display">
+              <span>Plus</span>
+              <span class="count-value">{{ selectedPerson.plus }}</span>
+            </div>
+          </div>
+          <div class="action-row">
+            <button @click="handlePM(-1)" class="action-btn minus-btn" :disabled="buttonDisabled">-</button>
+            <div class="counter-display">
+              <span>Minus</span>
+              <span class="count-value">{{ selectedPerson.minus }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div v-else class="details-placeholder">
+        <p>Select a person from the table to see details and actions.</p>
+      </div>
     </div>
 
 

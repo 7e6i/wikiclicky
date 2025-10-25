@@ -1,6 +1,7 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>The Modern Popularity Contest.</h1>
+    <p>Auto clickers encouraged!</p>
   </div>
 </template>
 
