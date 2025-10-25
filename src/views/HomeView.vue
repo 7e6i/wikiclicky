@@ -5,8 +5,8 @@ import { ref, onMounted } from 'vue'
 const people = ref([])
 const loading = ref(true)
 const error = ref(null)
-const columns = ['person_id','wiki_url',  'name', 'plus', 'minus', 'total', 'alpha', 'beta']
-const colTitles = ['Rank', 'Name', 'Plus', 'Minus', 'Total', 'Alpha', 'Beta']
+const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta']
+const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta']
 
 
 async function getPeople() {
@@ -15,9 +15,8 @@ async function getPeople() {
     const { data, error: fetchError } = await supabase
       .from('person')
       .select(columns.join(','))
-      .order('total', { ascending: false })
-      .order('plus', { ascending: false })
-      .order('minus', { ascending: true })
+      .order('delta', { ascending: false })
+      .order('sigma', { ascending: false })
 
     if (fetchError) {throw fetchError}
     if (data) {people.value = data}
@@ -56,11 +55,12 @@ onMounted(() => {
           >
             <td class="cell-rank">{{ index + 1 }}</td>
             <td class="cell-name">{{ person.name }}</td>
-            <td class="cell-plus">{{ person.plus }}</td>
-            <td class="cell-minus">{{ person.minus }}</td>
-            <td class="cell-total">{{ person.total }}</td>
-            <td class="cell-alpha">{{ person.alpha }}</td>
-            <td class="cell-beta">{{ person.beta }}</td>
+            <td class="cell-plus">{{ person.upvote }}</td>
+            <td class="cell-minus">{{ person.downvote }}</td>
+            <td class="cell-total">{{ person.sigma }}</td>
+            <td class="cell-alpha">{{ person.delta }}</td>
+            <td class="cell-beta">{{ person.pi }}</td>
+            <td class="cell-eta">{{ person.eta }}</td>
           </tr>
         </tbody>
       </table>

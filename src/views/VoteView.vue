@@ -4,8 +4,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const people = ref([])
 const error = ref(null)
-const columns = ['person_id','wiki_url',  'name', 'plus', 'minus', 'total', 'alpha', 'beta']
-const colTitles = ['Rank', 'Name', 'Plus', 'Minus', 'Total', 'Alpha', 'Beta']
+const columns = ['person_id','wiki_url',  'name', 'upvote', 'downvote', 'sigma', 'delta', 'pi', 'eta', 'upvote_auto', 'downvote_auto']
+const colTitles = ['Rank', 'Name', 'Upvotes', 'Downvotes', 'Sigma', 'Delta', 'Pi', 'Eta']
 
 const selectedPerson = ref(null)
 const buttonDisabled = ref(true)
@@ -21,7 +21,7 @@ async function saveVotes() {
   }
 
   const votesToSave = alteredPeople.value.map(
-    ({ person_id, plus, minus }) => ({person_id,plus,minus,})
+    ({ person_id, upvote, downvote }) => ({person_id,upvote,downvote,})
   )
 
   const { error: insertError } = await supabase.from('vote').insert(votesToSave)
@@ -29,8 +29,8 @@ async function saveVotes() {
   if (insertError) {
     console.error('Error saving votes:', insertError)
   } else {
-    selectedPerson.value.plus = 0
-    selectedPerson.value.minus = 0
+    selectedPerson.value.upvote = 0
+    selectedPerson.value.downvote = 0
     alteredPeople.value = [selectedPerson.value]
   }
 }
@@ -46,9 +46,8 @@ async function getPeople() {
     const { data, error: fetchError } = await supabase
       .from('person')
       .select(columns.join(','))
-      .order('total', { ascending: false })
-      .order('plus', { ascending: false })
-      .order('minus', { ascending: true })
+      .order('delta', { ascending: false })
+      .order('sigma', { ascending: false })
 
     if (fetchError) {throw fetchError}
     if (data) {people.value = data}
@@ -76,12 +75,17 @@ onUnmounted(() => {
 })
 
 function selectPerson(person){
-  selectedPerson.value = {
-    person_id:person.person_id, plus:0, minus:0,
-    name:person.name, wiki_url:person.wiki_url
+  
+  let altered = alteredPeople.value.find((p) => p.person_id === person.person_id)
+  console.log(altered)
+  if (altered){
+    selectedPerson.value = altered
   }
-
-  if (!alteredPeople.value.find((p) => p.person_id === person.person_id)){
+  else{
+      selectedPerson.value = {
+      person_id:person.person_id, upvote:0, downvote:0,
+      name:person.name, wiki_url:person.wiki_url
+    }
     alteredPeople.value.push(selectedPerson.value)
   }
 }
@@ -95,10 +99,10 @@ function handlePM(amount) {
   setTimeout(() => buttonDisabled.value = false, 1000)
 
   if (amount ===1){
-    selectedPerson.value.plus++
+    selectedPerson.value.upvote++
   }
   else if (amount === -1){
-    selectedPerson.value.minus++
+    selectedPerson.value.downvote++
   }
 }
 
@@ -116,15 +120,15 @@ function handlePM(amount) {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Plus</th>
-              <th>Minus</th>
+              <th>Up votes</th>
+              <th>Down nvotes</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="person in alteredPeople" :key="person.person_id">
               <td>{{ person.name }}</td>
-              <td>{{ person.plus }}</td>
-              <td>{{ person.minus }}</td>
+              <td>{{ person.upvote }}</td>
+              <td>{{ person.downvote }}</td>
             </tr>
           </tbody>
         </table>
@@ -155,11 +159,12 @@ function handlePM(amount) {
           >
             <td class="cell-rank">{{ index + 1 }}</td>
             <td class="cell-name">{{ person.name }}</td>
-            <td class="cell-plus">{{ person.plus }}</td>
-            <td class="cell-minus">{{ person.minus }}</td>
-            <td class="cell-total">{{ person.total }}</td>
-            <td class="cell-alpha">{{ person.alpha }}</td>
-            <td class="cell-beta">{{ person.beta }}</td>
+            <td class="cell-plus">{{ person.upvote }}</td>
+            <td class="cell-minus">{{ person.downvote }}</td>
+            <td class="cell-total">{{ person.sigma }}</td>
+            <td class="cell-alpha">{{ person.delta }}</td>
+            <td class="cell-beta">{{ person.pi }}</td>
+            <td class="cell-eta">{{ person.eta }}</td>
           </tr>
         </tbody>
       </table>
@@ -182,14 +187,14 @@ function handlePM(amount) {
             <button @click="handlePM(1)" class="action-btn plus-btn" :disabled="buttonDisabled">+</button>
             <div class="counter-display">
               <span>Plus</span>
-              <span class="count-value">{{ selectedPerson.plus }}</span>
+              <span class="count-value">{{ selectedPerson.upvote }}</span>
             </div>
           </div>
           <div class="action-row">
             <button @click="handlePM(-1)" class="action-btn minus-btn" :disabled="buttonDisabled">-</button>
             <div class="counter-display">
               <span>Minus</span>
-              <span class="count-value">{{ selectedPerson.minus }}</span>
+              <span class="count-value">{{ selectedPerson.downvote }}</span>
             </div>
           </div>
 
